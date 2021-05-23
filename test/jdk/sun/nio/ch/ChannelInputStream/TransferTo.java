@@ -70,6 +70,8 @@ public class TransferTo {
 
     public static void main(String[] args) throws Exception {
         test(fileChannelInput(), fileChannelOutput());
+        // TODO Need test for blocking socket
+        test(fileChannelInput(), writableByteChannelOutput()); // Non-Selectable
         test(readableByteChannelInput(), defaultOutput());
     }
 
@@ -197,6 +199,16 @@ public class TransferTo {
                     }
                 });
                 return Channels.newOutputStream(fileChannel);
+            }
+        };
+    }
+
+    private static OutputStreamProvider writableByteChannelOutput() {
+        return new OutputStreamProvider() {
+            public OutputStream output(Consumer<Supplier<byte[]>> spy) throws Exception {
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                spy.accept(outputStream::toByteArray);
+                return Channels.newOutputStream(Channels.newChannel(outputStream));
             }
         };
     }
